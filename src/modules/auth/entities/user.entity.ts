@@ -7,7 +7,7 @@ export interface User {
   username?: string;
   email: string;
   password: string;
-  fullName?: string;
+  name?: string;
   phoneNumber?: string;
   address?: string;
   city?: string;

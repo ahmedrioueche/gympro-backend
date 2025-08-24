@@ -12,9 +12,22 @@ const JWT_SECRET = process.env.JWT_SECRET || 'changeme';
 export class JwtAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) throw new UnauthorizedException('No token provided');
-    const token = authHeader.split(' ')[1];
+
+    // First try to get token from cookies (httpOnly cookies)
+    let token = req.cookies?.accessToken;
+
+    // Fallback to Authorization header for backward compatibility
+    if (!token) {
+      const authHeader = req.headers['authorization'];
+      if (authHeader) {
+        token = authHeader.split(' ')[1];
+      }
+    }
+
+    if (!token) {
+      throw new UnauthorizedException('No token provided');
+    }
+
     try {
       const payload = jwt.verify(token, JWT_SECRET) as any;
       req.user = payload;
